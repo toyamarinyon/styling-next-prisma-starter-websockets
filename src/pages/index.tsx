@@ -161,9 +161,9 @@ export default function IndexPage() {
         <title>Prisma Starter</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <div className="flex h-screen">
-        <section className="w-72 h-full bg-gray-800 flex flex-col">
-          <div className="flex-1 overflow-y-scroll">
+      <div className="flex md:h-screen md:flex-row flex-col">
+        <section className="w-full md:w-72 h-full bg-gray-800 flex flex-col">
+          <div className="flex-1 overflow-y-hidden">
             <div className="flex flex-col h-full divide-y divide-gray-700">
               <header className="p-4">
                 <h1 className="text-3xl font-bold text-gray-50">
@@ -181,10 +181,10 @@ export default function IndexPage() {
                   </a>
                 </p>
               </header>
-              <div className="text-gray-400 p-4 space-y-6 flex-1">
+              <div className="text-gray-400 p-4 space-y-6 flex-1 overflow-y-auto">
                 <article>
                   <h2 className="text-lg text-gray-200">Introduction</h2>
-                  <ul className="space-y-4">
+                  <ul className="space-y-3">
                     <li>Open inspector and head to Network tab</li>
                     <li>All client requests are handled through WebSockets</li>
                     <li>

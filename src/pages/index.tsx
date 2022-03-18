@@ -163,7 +163,7 @@ export default function IndexPage() {
       </Head>
       <div className="flex h-screen">
         <section className="w-72 h-full bg-gray-800 flex flex-col">
-          <div className="flex-1 overflow-scroll">
+          <div className="flex-1 overflow-y-scroll">
             <div className="flex flex-col h-full divide-y divide-gray-700">
               <header className="p-4">
                 <h1 className="text-3xl font-bold text-gray-50">
@@ -181,7 +181,7 @@ export default function IndexPage() {
                   </a>
                 </p>
               </header>
-              <div className="text-gray-400 p-4 space-y-6 overflow-scroll flex-1">
+              <div className="text-gray-400 p-4 space-y-6 flex-1">
                 <article>
                   <h2 className="text-lg text-gray-200">Introduction</h2>
                   <ul className="space-y-4">
@@ -217,7 +217,7 @@ export default function IndexPage() {
         </section>
         <div className="h-screen flex-1">
           <section className="bg-gray-700 h-full p-4 flex flex-col justify-end space-y-4">
-            <div className=" overflow-scroll">
+            <div className="overflow-y-scroll">
               <h2>{postsQuery.status === 'loading' && '(loading)'}</h2>
               <button
                 data-testid="loadMore"

@@ -9,13 +9,21 @@ function AddMessageForm() {
   const addPost = trpc.useMutation('post.add');
   const utils = trpc.useContext();
   const { data: session } = useSession();
+  const [message, setMessage] = useState('');
 
   const userName = session?.user?.name;
   if (!userName) {
     return (
-      <button onClick={() => signIn()} data-testid="signin">
-        Sign In to write
-      </button>
+      <div className="flex rounded bg-gray-800 px-3 py-2 text-lg text-gray-200 w-full justify-between">
+        <p className="font-bold">Let&apos;s sign in to write. </p>
+        <button
+          onClick={() => signIn()}
+          data-testid="signin"
+          className="px-4 bg-indigo-500 rounded h-full"
+        >
+          Sign In
+        </button>
+      </div>
     );
   }
   return (
@@ -29,49 +37,47 @@ function AddMessageForm() {
            * @link https://react-hook-form.com/
            */
 
-          const $text: HTMLInputElement = (e as any).target.elements.text;
           const input = {
-            text: $text.value,
+            text: message,
           };
           try {
             await addPost.mutateAsync(input);
-            $text.value = '';
+            setMessage('');
           } catch {}
         }}
       >
         <fieldset disabled={addPost.isLoading}>
-          <label htmlFor="name">Your name:</label>
-          <br />
-          <input id="name" name="name" type="text" disabled value={userName} />
-
-          <br />
-          <label htmlFor="text">Text:</label>
-          <br />
-          <textarea
-            id="text"
-            name="text"
-            autoFocus
-            onKeyDown={() => {
-              utils.client.mutation('post.isTyping', {
-                typing: true,
-              });
-            }}
-            onBlur={() => {
-              utils.client.mutation('post.isTyping', {
-                typing: false,
-              });
-            }}
-          />
-          <br />
-          <input type="submit" />
+          <div className="flex rounded bg-gray-500 px-3 py-2 text-lg text-gray-200 w-full items-end">
+            <textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              className="bg-transparent flex-1 outline-0"
+              rows={message.split(/\r|\n/).length}
+              id="text"
+              name="text"
+              autoFocus
+              onKeyDown={() => {
+                utils.client.mutation('post.isTyping', {
+                  typing: true,
+                });
+              }}
+              onBlur={() => {
+                utils.client.mutation('post.isTyping', {
+                  typing: false,
+                });
+              }}
+            />
+            <div>
+              <button type="submit" className="px-4 bg-indigo-500 rounded py-1">
+                Submit
+              </button>
+            </div>
+          </div>
         </fieldset>
         {addPost.error && (
           <p style={{ color: 'red' }}>{addPost.error.message}</p>
         )}
       </form>
-      <p>
-        or, <button onClick={() => signOut()}>Sign Out</button>
-      </p>
     </>
   );
 }
@@ -90,6 +96,8 @@ export default function IndexPage() {
     return msgs;
   });
   type Post = NonNullable<typeof messages>[number];
+  const { data: session } = useSession();
+  const userName = session?.user?.name;
 
   // fn to add and dedupe new messages onto state
   const addMessages = useCallback((incoming?: Post[]) => {
@@ -138,80 +146,119 @@ export default function IndexPage() {
         <title>Prisma Starter</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <h1>tRPC WebSocket starter</h1>
-      Showcases WebSocket + subscription support
-      <ul>
-        <li>Open inspector and head to Network tab</li>
-        <li>All client requests are handled through WebSockets</li>
-        <li>
-          We have a simple backend subscription on new messages that adds the
-          newly added message to the current state
-        </li>
-        <li>
-          <a
-            href="https://github.com/trpc/trpc/tree/main/examples/next-prisma-starter-websockets"
-            target="_blank"
-            rel="noreferrer"
-          >
-            View Source on GitHub
-          </a>
-        </li>
-      </ul>
-      <h2>
-        Messages
-        {postsQuery.status === 'loading' && '(loading)'}
-      </h2>
-      <button
-        data-testid="loadMore"
-        onClick={() => fetchPreviousPage()}
-        disabled={!hasPreviousPage || isFetchingPreviousPage}
-      >
-        {isFetchingPreviousPage
-          ? 'Loading more...'
-          : hasPreviousPage
-          ? 'Load More'
-          : 'Nothing more to load'}
-      </button>
-      {messages?.map((item) => (
-        <article key={item.id}>
-          [
-          {new Intl.DateTimeFormat('en-GB', {
-            dateStyle: 'short',
-            timeStyle: 'short',
-          }).format(item.createdAt)}
-          ]{' '}
-          <strong>
-            {item.source === 'RAW' ? (
-              item.name
-            ) : (
-              <a
-                href={`https://github.com/${item.name}`}
-                target="_blank"
-                rel="noreferrer"
+      <div className="flex min-h-screen">
+        <div className="inset-0">
+          <section className="w-72 h-full bg-gray-800 divide-y divide-gray-700">
+            <header className="p-4">
+              <h1 className="text-3xl font-bold text-gray-50">
+                tRPC WebSocket starter
+              </h1>
+              <p className="text-sm text-gray-400">
+                Showcases WebSocket + subscription support
+                <br />
+                <a
+                  href="https://github.com/trpc/trpc/tree/main/examples/next-prisma-starter-websockets"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  View Source on GitHub
+                </a>
+              </p>
+            </header>
+            <div className="text-gray-400 p-4 space-y-6">
+              <article>
+                <h2 className="text-lg text-gray-200">Introduction</h2>
+                <ul className="space-y-4">
+                  <li>Open inspector and head to Network tab</li>
+                  <li>All client requests are handled through WebSockets</li>
+                  <li>
+                    We have a simple backend subscription on new messages that
+                    adds the newly added message to the current state
+                  </li>
+                  <li>
+                    <Link href="/about">
+                      <a>Go to other page that displays a random number</a>
+                    </Link>
+                    (cancels subscription)
+                  </li>
+                </ul>
+              </article>
+              {userName && (
+                <article>
+                  <h2 className="text-lg text-gray-200">User information</h2>
+                  <ul className="space-y-2">
+                    <li className="text-lg">You&apos;re {userName}</li>
+                    <li>
+                      <button onClick={() => signOut()}>Sign Out</button>
+                    </li>
+                  </ul>
+                </article>
+              )}
+            </div>
+          </section>
+        </div>
+        <div className="h-screen flex-1">
+          <section className="bg-gray-700 h-full p-4 flex flex-col justify-end space-y-4">
+            <div className=" overflow-scroll">
+              <h2>{postsQuery.status === 'loading' && '(loading)'}</h2>
+              <button
+                data-testid="loadMore"
+                onClick={() => fetchPreviousPage()}
+                disabled={!hasPreviousPage || isFetchingPreviousPage}
+                className="text-gray-400"
               >
-                {item.name}
-              </a>
+                {isFetchingPreviousPage
+                  ? 'Loading more...'
+                  : hasPreviousPage
+                  ? 'Load More'
+                  : 'Nothing more to load'}
+              </button>
+              <div className="space-y-4">
+                {messages?.map((item) => (
+                  <article key={item.id} className=" text-gray-50">
+                    <header className="flex space-x-2 text-sm">
+                      <h3 className="text-md">
+                        {item.source === 'RAW' ? (
+                          item.name
+                        ) : (
+                          <a
+                            href={`https://github.com/${item.name}`}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            {item.name}
+                          </a>
+                        )}
+                      </h3>
+                      <span className="text-gray-500">
+                        {new Intl.DateTimeFormat('en-GB', {
+                          dateStyle: 'short',
+                          timeStyle: 'short',
+                        }).format(item.createdAt)}
+                      </span>
+                    </header>
+                    <p className="text-xl leading-tight whitespace-pre-line">
+                      {item.text}
+                    </p>
+                  </article>
+                ))}
+              </div>
+            </div>
+            <div className="w-full">
+              <AddMessageForm />
+              <p className="h-2 italic text-gray-400">
+                {currentlyTyping.length
+                  ? `${currentlyTyping.join(', ')} typing...`
+                  : ''}
+              </p>
+            </div>
+
+            {process.env.NODE_ENV !== 'production' && (
+              <ReactQueryDevtools initialIsOpen={false} />
             )}
-          </strong>
-          : <em>{item.text}</em>
-        </article>
-      ))}
-      <hr />
-      <p style={{ fontStyle: 'italic' }}>
-        Currently typing:{' '}
-        {currentlyTyping.length ? currentlyTyping.join(', ') : 'No one'}
-      </p>
-      <h2>Add message</h2>
-      <AddMessageForm />
-      <p>
-        <Link href="/about">
-          <a>Go to other page that displays a random number</a>
-        </Link>{' '}
-        (cancels subscription)
-      </p>
-      {process.env.NODE_ENV !== 'production' && (
-        <ReactQueryDevtools initialIsOpen={false} />
-      )}
+          </section>
+        </div>
+      </div>
     </>
   );
 }

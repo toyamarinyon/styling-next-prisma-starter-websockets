@@ -1,11 +1,11 @@
 import { signIn, signOut, useSession } from 'next-auth/react';
 import Head from 'next/head';
 import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ReactQueryDevtools } from 'react-query/devtools';
 import { trpc } from '../utils/trpc';
 
-function AddMessageForm() {
+function AddMessageForm({ onMessagePost }: { onMessagePost: () => void }) {
   const addPost = trpc.useMutation('post.add');
   const utils = trpc.useContext();
   const { data: session } = useSession();
@@ -43,6 +43,7 @@ function AddMessageForm() {
           try {
             await addPost.mutateAsync(input);
             setMessage('');
+            onMessagePost();
           } catch {}
         }}
       >
@@ -98,6 +99,7 @@ export default function IndexPage() {
   type Post = NonNullable<typeof messages>[number];
   const { data: session } = useSession();
   const userName = session?.user?.name;
+  const scrollTargetRef = useRef<HTMLDivElement>(null);
 
   // fn to add and dedupe new messages onto state
   const addMessages = useCallback((incoming?: Post[]) => {
@@ -121,6 +123,19 @@ export default function IndexPage() {
     addMessages(msgs);
   }, [postsQuery.data?.pages, addMessages]);
 
+  const scrollToBottomOfList = useCallback(() => {
+    if (scrollTargetRef.current == null) {
+      return;
+    }
+
+    scrollTargetRef.current.scrollIntoView({
+      behavior: 'smooth',
+      block: 'end',
+    });
+  }, [scrollTargetRef]);
+  useEffect(() => {
+    scrollToBottomOfList();
+  }, []);
   // subscribe to new posts and add
   trpc.useSubscription(['post.onAdd'], {
     onNext(post) {
@@ -146,57 +161,60 @@ export default function IndexPage() {
         <title>Prisma Starter</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <div className="flex min-h-screen">
-        <div className="inset-0">
-          <section className="w-72 h-full bg-gray-800 divide-y divide-gray-700">
-            <header className="p-4">
-              <h1 className="text-3xl font-bold text-gray-50">
-                tRPC WebSocket starter
-              </h1>
-              <p className="text-sm text-gray-400">
-                Showcases WebSocket + subscription support
-                <br />
-                <a
-                  href="https://github.com/trpc/trpc/tree/main/examples/next-prisma-starter-websockets"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  View Source on GitHub
-                </a>
-              </p>
-            </header>
-            <div className="text-gray-400 p-4 space-y-6">
-              <article>
-                <h2 className="text-lg text-gray-200">Introduction</h2>
-                <ul className="space-y-4">
-                  <li>Open inspector and head to Network tab</li>
-                  <li>All client requests are handled through WebSockets</li>
-                  <li>
-                    We have a simple backend subscription on new messages that
-                    adds the newly added message to the current state
-                  </li>
-                  <li>
-                    <Link href="/about">
-                      <a>Go to other page that displays a random number</a>
-                    </Link>
-                    (cancels subscription)
-                  </li>
-                </ul>
-              </article>
-              {userName && (
+      <div className="flex h-screen">
+        <section className="w-72 h-full bg-gray-800 flex flex-col">
+          <div className="flex-1 overflow-scroll">
+            <div className="flex flex-col h-full divide-y divide-gray-700">
+              <header className="p-4">
+                <h1 className="text-3xl font-bold text-gray-50">
+                  tRPC WebSocket starter
+                </h1>
+                <p className="text-sm text-gray-400">
+                  Showcases WebSocket + subscription support
+                  <br />
+                  <a
+                    href="https://github.com/trpc/trpc/tree/main/examples/next-prisma-starter-websockets"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    View Source on GitHub
+                  </a>
+                </p>
+              </header>
+              <div className="text-gray-400 p-4 space-y-6 overflow-scroll flex-1">
                 <article>
-                  <h2 className="text-lg text-gray-200">User information</h2>
-                  <ul className="space-y-2">
-                    <li className="text-lg">You&apos;re {userName}</li>
+                  <h2 className="text-lg text-gray-200">Introduction</h2>
+                  <ul className="space-y-4">
+                    <li>Open inspector and head to Network tab</li>
+                    <li>All client requests are handled through WebSockets</li>
                     <li>
-                      <button onClick={() => signOut()}>Sign Out</button>
+                      We have a simple backend subscription on new messages that
+                      adds the newly added message to the current state
+                    </li>
+                    <li>
+                      <Link href="/about">
+                        <a>Go to other page that displays a random number</a>
+                      </Link>
+                      (cancels subscription)
                     </li>
                   </ul>
                 </article>
-              )}
+                {userName && (
+                  <article>
+                    <h2 className="text-lg text-gray-200">User information</h2>
+                    <ul className="space-y-2">
+                      <li className="text-lg">You&apos;re {userName}</li>
+                      <li>
+                        <button onClick={() => signOut()}>Sign Out</button>
+                      </li>
+                    </ul>
+                  </article>
+                )}
+              </div>
             </div>
-          </section>
-        </div>
+          </div>
+          <div className="h-16 flex-shrink-0"></div>
+        </section>
         <div className="h-screen flex-1">
           <section className="bg-gray-700 h-full p-4 flex flex-col justify-end space-y-4">
             <div className=" overflow-scroll">
@@ -242,10 +260,11 @@ export default function IndexPage() {
                     </p>
                   </article>
                 ))}
+                <div ref={scrollTargetRef}></div>
               </div>
             </div>
             <div className="w-full">
-              <AddMessageForm />
+              <AddMessageForm onMessagePost={() => scrollToBottomOfList()} />
               <p className="h-2 italic text-gray-400">
                 {currentlyTyping.length
                   ? `${currentlyTyping.join(', ')} typing...`

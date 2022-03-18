@@ -161,8 +161,8 @@ export default function IndexPage() {
         <title>Prisma Starter</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <div className="flex md:h-screen md:flex-row flex-col">
-        <section className="w-full md:w-72 h-full bg-gray-800 flex flex-col">
+      <div className="flex h-screen md:flex-row flex-col">
+        <section className="w-full md:w-72 bg-gray-800 flex flex-col">
           <div className="flex-1 overflow-y-hidden">
             <div className="flex flex-col h-full divide-y divide-gray-700">
               <header className="p-4">
@@ -181,7 +181,7 @@ export default function IndexPage() {
                   </a>
                 </p>
               </header>
-              <div className="text-gray-400 p-4 space-y-6 flex-1 overflow-y-auto">
+              <div className="hidden md:block text-gray-400 p-4 space-y-6 flex-1 overflow-y-auto">
                 <article>
                   <h2 className="text-lg text-gray-200">Introduction</h2>
                   <ul className="space-y-3">
@@ -213,9 +213,9 @@ export default function IndexPage() {
               </div>
             </div>
           </div>
-          <div className="h-16 flex-shrink-0"></div>
+          <div className="hidden md:block h-16 flex-shrink-0"></div>
         </section>
-        <div className="h-screen flex-1">
+        <div className="md:h-screen flex-1">
           <section className="bg-gray-700 h-full p-4 flex flex-col justify-end space-y-4">
             <div className="overflow-y-scroll">
               <h2>{postsQuery.status === 'loading' && '(loading)'}</h2>
@@ -273,7 +273,9 @@ export default function IndexPage() {
             </div>
 
             {process.env.NODE_ENV !== 'production' && (
-              <ReactQueryDevtools initialIsOpen={false} />
+              <div className="hidden md:block">
+                <ReactQueryDevtools initialIsOpen={false} />
+              </div>
             )}
           </section>
         </div>
